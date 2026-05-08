@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#ffffff">
+<title>중국어 비즈니스 단어장</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.08);
+    --border-2: rgba(0,0,0,0.15);
+    --accent: #D4537E;
+    --accent-bg: #FBEAF0;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a;
+      --surface: #262625;
+      --surface-2: #333331;
+      --text: #f5f4ef;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.1);
+      --border-2: rgba(255,255,255,0.18);
+      --accent: #ED93B1;
+      --accent-bg: #4B1528;
+    }
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .app { padding: 16px; padding-bottom: 80px; }
+  .header {
+    padding: 8px 0 16px;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .header p {
+    font-size: 13px;
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  /* 탭 바 */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--surface-2);
+    padding: 4px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .tab-btn.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* 검색 & 필터 */
+  .search-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--border-2);
+  }
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-2);
+    white-space: nowrap;
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  .filter-chip.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .stats-row {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+
+  /* 단어 카드 */
+  .vocab-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .vocab-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    position: relative;
+  }
+  .vocab-category {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-2);
+    margin-bottom: 8px;
+  }
+  .vocab-meaning {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 8px;
+    padding-right: 36px;
+    line-height: 1.3;
+  }
+  .vocab-chinese-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .vocab-chinese {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .vocab-pinyin {
+    font-size: 14px;
+    color: var(--text-2);
+    font-style: italic;
+  }
+  .vocab-tone {
+    font-size: 11px;
+    color: var(--text-3);
+    margin: 0 0 10px;
+  }
+  .vocab-example {
+    background: var(--surface-2);
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+  }
+  .vocab-example-ko {
+    color: var(--text);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .vocab-example-cn {
+    color: var(--text-2);
+    font-size: 13px;
+  }
+  .vocab-note {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 8px;
+    font-style: italic;
+  }
+  .fav-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--text-3);
+    font-size: 22px;
+    line-height: 1;
+    border-radius: 50%;
+    transition: all 0.15s;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fav-btn.active {
+    color: var(--accent);
+  }
+  .fav-btn:active { transform: scale(0.9); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-3);
+    font-size: 14px;
+  }
+  .empty-state-emoji {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+
+  /* 플래시카드 */
+  .flashcard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+  }
+  .quiz-source-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .quiz-source-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-2);
+    font-family: inherit;
+  }
+  .quiz-source-btn.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .quiz-progress {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .flashcard {
+    width: 100%;
+    min-height: 280px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 16px;
+    transition: transform 0.1s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .flashcard:active { transform: scale(0.99); }
+  .flashcard-front-meaning {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    line-height: 1.3;
+  }
+  .flashcard-front-category {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-bottom: 16px;
+  }
+  .flashcard-hint {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 16px;
+  }
+  .flashcard-back { display: none; width: 100%; }
+  .flashcard.flipped .flashcard-back { display: block; }
+  .flashcard.flipped .flashcard-front { display: none; }
+  .flashcard-back-chinese {
+    font-size: 38px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+  .flashcard-back-pinyin {
+    font-size: 16px;
+    color: var(--text-2);
+    font-style: italic;
+    margin: 0 0 4px;
+  }
+  .flashcard-back-tone {
+    font-size: 12px;
+    color: var(--text-3);
+    margin: 0 0 14px;
+  }
+  .flashcard-back-meaning {
+    font-size: 18px;
+    color: var(--text);
+    margin: 0 0 14px;
+    font-weight: 500;
+  }
+  .flashcard-back-example {
+    font-size: 13px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    margin-top: 8px;
+    text-align: left;
+  }
+  .flashcard-back-example-ko {
+    color: var(--text);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .flashcard-back-example-cn {
+    color: var(--text-2);
+    font-size: 12px;
+  }
+  .quiz-controls {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+  .quiz-btn {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .quiz-btn:active {
+    background: var(--surface-2);
+  }
+  .quiz-btn.primary {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  @media (max-width: 480px) {
+    .app { padding: 12px; }
+    .header h1 { font-size: 20px; }
+    .vocab-meaning { font-size: 17px; }
+    .vocab-chinese { font-size: 19px; }
+    .flashcard-front-meaning { font-size: 24px; }
+    .flashcard-back-chinese { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>📚 중국어 비즈니스 단어장</h1>
+    <p>제품 제작 거래 회화 모음</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="all">전체</button>
+    <button class="tab-btn" data-tab="fav">즐겨찾기</button>
+    <button class="tab-btn" data-tab="quiz">플래시카드</button>
+  </div>
+
+  <!-- 전체 단어 탭 -->
+  <div class="tab-content active" id="tab-all">
+    <input type="text" id="search-input" class="search-input" placeholder="🔍 한국어 / 중국어 / 병음 검색" />
+    <div class="filter-row" id="filter-chips"></div>
+    <div class="stats-row" id="stats-row"></div>
+    <div class="vocab-list" id="vocab-list"></div>
+  </div>
+
+  <!-- 즐겨찾기 탭 -->
+  <div class="tab-content" id="tab-fav">
+    <div class="stats-row" id="fav-stats"></div>
+    <div class="vocab-list" id="fav-list"></div>
+  </div>
+
+  <!-- 플래시카드 탭 -->
+  <div class="tab-content" id="tab-quiz">
+    <div class="quiz-source-row">
+      <button class="quiz-source-btn active" data-source="all">전체</button>
+      <button class="quiz-source-btn" data-source="fav">즐겨찾기만</button>
+    </div>
+    <div class="quiz-progress" id="quiz-progress"></div>
+    <div class="flashcard-container">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="flashcard-front" id="card-front">
+          <div class="flashcard-front-category" id="card-cat-front"></div>
+          <div class="flashcard-front-meaning" id="card-meaning-front"></div>
+          <div class="flashcard-hint">탭해서 중국어 보기 👆</div>
+        </div>
+        <div class="flashcard-back" id="card-back">
+          <div class="flashcard-back-chinese" id="card-chinese"></div>
+          <div class="flashcard-back-pinyin" id="card-pinyin"></div>
+          <div class="flashcard-back-tone" id="card-tone"></div>
+          <div class="flashcard-back-meaning" id="card-meaning"></div>
+          <div class="flashcard-back-example" id="card-example"></div>
+        </div>
+      </div>
+      <div class="quiz-controls">
+        <button class="quiz-btn" onclick="prevCard()">← 이전</button>
+        <button class="quiz-btn" onclick="shuffleCards()">🔀 섞기</button>
+        <button class="quiz-btn primary" onclick="nextCard()">다음 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const VOCAB = [
+  // 제품/디자인
+  {cat:"제품/디자인", cn:"设计", py:"shè jì", tone:"4성+4성", mean:"디자인", ex_cn:"新的产品设计已经完成了。", ex_ko:"새 제품 디자인이 완료됐어요.", note:""},
+  {cat:"제품/디자인", cn:"设计稿", py:"shè jì gǎo", tone:"4성+4성+3성", mean:"디자인 시안", ex_cn:"设计稿可以马上发给你。", ex_ko:"디자인 시안 바로 보내드릴게요.", note:"稿=원고/시안"},
+  {cat:"제품/디자인", cn:"款式", py:"kuǎn shì", tone:"3성+4성", mean:"종류, 스타일, 모델", ex_cn:"目前有两种款式。", ex_ko:"현재 두 가지 종류가 있어요.", note:""},
+  {cat:"제품/디자인", cn:"种类", py:"zhǒng lèi", tone:"3성+4성", mean:"종류 (큰 개념)", ex_cn:"我想再增加产品种类。", ex_ko:"제품 종류를 더 늘리고 싶어요.", note:""},
+  {cat:"제품/디자인", cn:"潘通色", py:"pān tōng sè", tone:"1성+1성+4성", mean:"팬톤 컬러", ex_cn:"里面有包含潘通色。", ex_ko:"팬톤 컬러가 포함되어 있어요.", note:""},
+  {cat:"제품/디자인", cn:"渐变色", py:"jiàn biàn sè", tone:"4성+4성+4성", mean:"그라데이션 색상", ex_cn:"小的产品有渐变色。", ex_ko:"작은 제품은 그라데이션이 있어요.", note:""},
+  {cat:"제품/디자인", cn:"尺寸", py:"chǐ cùn", tone:"3성+4성", mean:"사이즈, 치수", ex_cn:"小尺寸的产品。", ex_ko:"작은 사이즈 제품.", note:""},
+  {cat:"제품/디자인", cn:"方形", py:"fāng xíng", tone:"1성+2성", mean:"사각형", ex_cn:"方形裁切得整齐一点。", ex_ko:"사각형은 깔끔하게 재단해 주세요.", note:""},
+
+  // 생산/제작
+  {cat:"생산/제작", cn:"样品", py:"yàng pǐn", tone:"4성+3성", mean:"샘플 (완성된 물건)", ex_cn:"我想顺便拿样品。", ex_ko:"샘플도 같이 받고 싶어요.", note:"물건 자체"},
+  {cat:"생산/제작", cn:"打样", py:"dǎ yàng", tone:"3성+4성", mean:"샘플 제작 (행위)", ex_cn:"我看下打样费多少。", ex_ko:"샘플 제작비 얼마인지 볼게요.", note:"만드는 행위"},
+  {cat:"생산/제작", cn:"打样费", py:"dǎ yàng fèi", tone:"3성+4성+4성", mean:"샘플 제작비", ex_cn:"打样费挺贵的。", ex_ko:"샘플 제작비가 꽤 비싸네요.", note:""},
+  {cat:"생산/제작", cn:"裁切", py:"cái qiē", tone:"2성+1성", mean:"재단하다", ex_cn:"方形裁切得整齐。", ex_ko:"사각형을 깔끔하게 재단하다.", note:"전문 용어"},
+  {cat:"생산/제작", cn:"整齐", py:"zhěng qí", tone:"3성+2성", mean:"깔끔하다, 가지런하다", ex_cn:"裁切得整齐一点。", ex_ko:"좀 더 깔끔하게 재단해 주세요.", note:""},
+  {cat:"생산/제작", cn:"印刷", py:"yìn shuā", tone:"4성+1성", mean:"인쇄", ex_cn:"印刷的时候注意。", ex_ko:"인쇄할 때 주의해 주세요.", note:""},
+  {cat:"생산/제작", cn:"油墨", py:"yóu mò", tone:"2성+4성", mean:"잉크", ex_cn:"不要让油墨堆积。", ex_ko:"잉크가 뭉치지 않게 해주세요.", note:""},
+  {cat:"생산/제작", cn:"堆积", py:"duī jī", tone:"1성+1성", mean:"쌓이다, 뭉치다", ex_cn:"油墨不要堆积。", ex_ko:"잉크가 뭉치지 않게.", note:""},
+  {cat:"생산/제작", cn:"不良品", py:"bù liáng pǐn", tone:"4성+2성+3성", mean:"불량품", ex_cn:"只要没有不良品的问题。", ex_ko:"불량품 문제만 없으면.", note:""},
+  {cat:"생산/제작", cn:"核算", py:"hé suàn", tone:"2성+4성", mean:"계산하다, 원가 산출", ex_cn:"在核算。", ex_ko:"계산 중이에요.", note:"꼼꼼히 따짐"},
+
+  // 비즈니스 표현
+  {cat:"비즈니스 표현", cn:"其实", py:"qí shí", tone:"2성+2성", mean:"사실은", ex_cn:"其实只要没问题。", ex_ko:"사실 문제만 없으면.", note:""},
+  {cat:"비즈니스 표현", cn:"增加", py:"zēng jiā", tone:"1성+1성", mean:"늘리다, 증가시키다", ex_cn:"我想增加产品种类。", ex_ko:"제품 종류를 늘리고 싶어요.", note:"전체 양/종류"},
+  {cat:"비즈니스 표현", cn:"追加", py:"zhuī jiā", tone:"1성+1성", mean:"추가하다 (기존+더)", ex_cn:"我打算追加产品。", ex_ko:"제품을 추가할 계획이에요.", note:"추가 주문"},
+  {cat:"비즈니스 표현", cn:"打算", py:"dǎ suàn", tone:"3성+4성", mean:"~할 계획이다", ex_cn:"我有打算追加更多产品。", ex_ko:"제품을 더 추가할 계획이 있어요.", note:""},
+  {cat:"비즈니스 표현", cn:"挺", py:"tǐng", tone:"3성", mean:"꽤, 상당히", ex_cn:"挺贵的呢。", ex_ko:"꽤 비싸네요.", note:"挺~的 구조"},
+  {cat:"비즈니스 표현", cn:"应该", py:"yīng gāi", tone:"1성+1성", mean:"~일 것이다", ex_cn:"应该也没问题吧?", ex_ko:"아마 문제 없겠죠?", note:"추측"},
+  {cat:"비즈니스 표현", cn:"才", py:"cái", tone:"2성", mean:"그래서 비로소 (강조)", ex_cn:"因为复杂，才想看样品。", ex_ko:"복잡하니까 (그래서) 샘플 보려는 거예요.", note:"이유 강조"},
+  {cat:"비즈니스 표현", cn:"复杂", py:"fù zá", tone:"4성+2성", mean:"복잡하다", ex_cn:"小的产品比较复杂。", ex_ko:"작은 제품이 좀 복잡해요.", note:""},
+  {cat:"비즈니스 표현", cn:"简单", py:"jiǎn dān", tone:"3성+1성", mean:"간단하다", ex_cn:"做起来比较简单。", ex_ko:"만들기에 비교적 간단해요.", note:""},
+  {cat:"비즈니스 표현", cn:"如果", py:"rú guǒ", tone:"2성+3성", mean:"만약 ~라면", ex_cn:"如果再多加几个的话。", ex_ko:"만약 몇 개 더 추가한다면.", note:"如果~的话"},
+  {cat:"비즈니스 표현", cn:"顺便", py:"shùn biàn", tone:"4성+4성", mean:"~하는 김에", ex_cn:"我想顺便拿样品。", ex_ko:"하는 김에 샘플도 받고 싶어요.", note:""},
+
+  // 결제/납기
+  {cat:"결제/납기", cn:"付款", py:"fù kuǎn", tone:"4성+3성", mean:"결제하다, 지불하다", ex_cn:"可以用PayPal付款吗?", ex_ko:"페이팔로 결제할 수 있을까요?", note:"일상 표현"},
+  {cat:"결제/납기", cn:"支付", py:"zhī fù", tone:"1성+4성", mean:"지불하다 (격식)", ex_cn:"微信支付。", ex_ko:"위챗 페이.", note:"공식 표현"},
+  {cat:"결제/납기", cn:"转账", py:"zhuǎn zhàng", tone:"3성+4성", mean:"송금, 계좌이체", ex_cn:"银行转账。", ex_ko:"은행 송금.", note:""},
+  {cat:"결제/납기", cn:"货款", py:"huò kuǎn", tone:"4성+3성", mean:"물품 대금", ex_cn:"货款怎么付?", ex_ko:"대금은 어떻게 지불하나요?", note:""},
+  {cat:"결제/납기", cn:"定金", py:"dìng jīn", tone:"4성+1성", mean:"계약금, 선금", ex_cn:"30%定金。", ex_ko:"30% 계약금.", note:""},
+  {cat:"결제/납기", cn:"尾款", py:"wěi kuǎn", tone:"3성+3성", mean:"잔금", ex_cn:"70%尾款。", ex_ko:"70% 잔금.", note:""},
+  {cat:"결제/납기", cn:"电汇", py:"diàn huì", tone:"4성+4성", mean:"전신환 (T/T)", ex_cn:"电汇付款。", ex_ko:"전신환으로 결제.", note:"무역 거래"},
+  {cat:"결제/납기", cn:"发货", py:"fā huò", tone:"1성+4성", mean:"발송, 출고", ex_cn:"发货之前一个月就够了。", ex_ko:"발송 전 한 달이면 충분해요.", note:""},
+  {cat:"결제/납기", cn:"到货", py:"dào huò", tone:"4성+4성", mean:"도착, 입고", ex_cn:"什么时候到货?", ex_ko:"언제 도착해요?", note:""},
+  {cat:"결제/납기", cn:"交货期", py:"jiāo huò qī", tone:"1성+4성+1성", mean:"납기일", ex_cn:"交货期是什么时候?", ex_ko:"납기일은 언제인가요?", note:""},
+  {cat:"결제/납기", cn:"够", py:"gòu", tone:"4성", mean:"충분하다", ex_cn:"一个月就够了。", ex_ko:"한 달이면 충분해요.", note:"구어체"},
+  {cat:"결제/납기", cn:"足够", py:"zú gòu", tone:"2성+4성", mean:"충분하다 (강조)", ex_cn:"时间足够了。", ex_ko:"시간이 충분합니다.", note:"좀 더 격식"},
+];
+
+const FAV_KEY = 'cn_vocab_favorites_v1';
+
+let state = {
+  search: "",
+  category: "전체",
+  favorites: new Set(),
+  cardIndex: 0,
+  cardFlipped: false,
+  quizSource: "all",
+  shuffledIndices: [],
+};
+
+// 즐겨찾기 로컬 저장
+try {
+  const saved = localStorage.getItem(FAV_KEY);
+  if (saved) state.favorites = new Set(JSON.parse(saved));
+} catch (e) {}
+
+function saveFavs() {
+  try {
+    localStorage.setItem(FAV_KEY, JSON.stringify([...state.favorites]));
+  } catch (e) {}
+}
+
+const categories = ["전체", ...new Set(VOCAB.map(v => v.cat))];
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+function getFiltered() {
+  const s = state.search.toLowerCase().trim();
+  return VOCAB.filter(v => {
+    if (state.category !== "전체" && v.cat !== state.category) return false;
+    if (!s) return true;
+    return v.cn.includes(s) ||
+           v.py.toLowerCase().includes(s) ||
+           v.mean.toLowerCase().includes(s) ||
+           v.ex_cn.includes(s) ||
+           v.ex_ko.toLowerCase().includes(s);
+  });
+}
+
+function renderFilters() {
+  const el = document.getElementById('filter-chips');
+  el.innerHTML = categories.map(c =>
+    `<button class="filter-chip ${state.category === c ? 'active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
+  ).join('');
+  el.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.category = btn.dataset.cat;
+      renderFilters();
+      renderList();
+    });
+  });
+}
+
+function renderCard(v) {
+  const isFav = state.favorites.has(v.cn);
+  return `
+    <div class="vocab-card">
+      <button class="fav-btn ${isFav ? 'active' : ''}" data-cn="${escapeHtml(v.cn)}" aria-label="즐겨찾기">${isFav ? '♥' : '♡'}</button>
+      <span class="vocab-category">${escapeHtml(v.cat)}</span>
+      <h3 class="vocab-meaning">${escapeHtml(v.mean)}</h3>
+      <div class="vocab-chinese-row">
+        <span class="vocab-chinese">${escapeHtml(v.cn)}</span>
+        <span class="vocab-pinyin">${escapeHtml(v.py)}</span>
+      </div>
+      <div class="vocab-tone">${escapeHtml(v.tone)}</div>
+      <div class="vocab-example">
+        <div class="vocab-example-ko">${escapeHtml(v.ex_ko)}</div>
+        <div class="vocab-example-cn">${escapeHtml(v.ex_cn)}</div>
+      </div>
+      ${v.note ? `<p class="vocab-note">💡 ${escapeHtml(v.note)}</p>` : ''}
+    </div>
+  `;
+}
+
+function attachFavListeners(container) {
+  container.querySelectorAll('.fav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const cn = btn.dataset.cn;
+      if (state.favorites.has(cn)) state.favorites.delete(cn);
+      else state.favorites.add(cn);
+      saveFavs();
+      renderList();
+      renderFavList();
+    });
+  });
+}
+
+function renderList() {
+  const list = getFiltered();
+  const el = document.getElementById('vocab-list');
+  const stats = document.getElementById('stats-row');
+  stats.textContent = `총 ${list.length}개`;
+  if (list.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-emoji">🔍</div>검색 결과가 없어요</div>';
+    return;
+  }
+  el.innerHTML = list.map(renderCard).join('');
+  attachFavListeners(el);
+}
+
+function renderFavList() {
+  const favs = VOCAB.filter(v => state.favorites.has(v.cn));
+  const el = document.getElementById('fav-list');
+  const stats = document.getElementById('fav-stats');
+  stats.textContent = `즐겨찾기 ${favs.length}개`;
+  if (favs.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-emoji">♡</div>아직 즐겨찾기한 단어가 없어요<br><span style="font-size:12px">전체 단어에서 ♡ 를 눌러보세요</span></div>';
+    return;
+  }
+  el.innerHTML = favs.map(renderCard).join('');
+  attachFavListeners(el);
+}
+
+function getQuizPool() {
+  if (state.quizSource === 'fav') {
+    const favs = VOCAB.filter(v => state.favorites.has(v.cn));
+    return favs.length > 0 ? favs : VOCAB;
+  }
+  return VOCAB;
+}
+
+function shuffleCards() {
+  const pool = getQuizPool();
+  const indices = pool.map((_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  state.shuffledIndices = indices;
+  state.cardIndex = 0;
+  state.cardFlipped = false;
+  renderFlashcard();
+}
+
+function renderFlashcard() {
+  const pool = getQuizPool();
+  if (state.shuffledIndices.length === 0 || state.shuffledIndices.length !== pool.length) {
+    state.shuffledIndices = pool.map((_, i) => i);
+  }
+  const idx = state.shuffledIndices[state.cardIndex];
+  const v = pool[idx];
+
+  document.getElementById('quiz-progress').textContent = `${state.cardIndex + 1} / ${pool.length}`;
+  document.getElementById('card-cat-front').textContent = v.cat;
+  document.getElementById('card-meaning-front').textContent = v.mean;
+  document.getElementById('card-chinese').textContent = v.cn;
+  document.getElementById('card-pinyin').textContent = v.py;
+  document.getElementById('card-tone').textContent = v.tone;
+  document.getElementById('card-meaning').textContent = v.mean;
+  document.getElementById('card-example').innerHTML =
+    `<div class="flashcard-back-example-ko">${escapeHtml(v.ex_ko)}</div>` +
+    `<div class="flashcard-back-example-cn">${escapeHtml(v.ex_cn)}</div>`;
+
+  const card = document.getElementById('flashcard');
+  if (state.cardFlipped) card.classList.add('flipped');
+  else card.classList.remove('flipped');
+}
+
+function flipCard() {
+  state.cardFlipped = !state.cardFlipped;
+  renderFlashcard();
+}
+
+function nextCard() {
+  const pool = getQuizPool();
+  state.cardIndex = (state.cardIndex + 1) % pool.length;
+  state.cardFlipped = false;
+  renderFlashcard();
+}
+
+function prevCard() {
+  const pool = getQuizPool();
+  state.cardIndex = (state.cardIndex - 1 + pool.length) % pool.length;
+  state.cardFlipped = false;
+  renderFlashcard();
+}
+
+window.flipCard = flipCard;
+window.nextCard = nextCard;
+window.prevCard = prevCard;
+window.shuffleCards = shuffleCards;
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tab));
+    if (tab === 'fav') renderFavList();
+    if (tab === 'quiz') renderFlashcard();
+  });
+});
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  state.search = e.target.value;
+  renderList();
+});
+
+document.querySelectorAll('.quiz-source-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.quizSource = btn.dataset.source;
+    document.querySelectorAll('.quiz-source-btn').forEach(b => b.classList.toggle('active', b === btn));
+    state.shuffledIndices = [];
+    state.cardIndex = 0;
+    state.cardFlipped = false;
+    renderFlashcard();
+  });
+});
+
+renderFilters();
+renderList();
+renderFavList();
+renderFlashcard();
+</script>
+</body>
+</html>

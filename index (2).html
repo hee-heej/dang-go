@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="theme-color" content="#F5F1EB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dang-go">
+<title>Dang-go</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍡</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍡</text></svg>">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  :root {
+    --bg: #F5F1EB; --surface: #FFFCF7; --surface-2: #EFEBE3;
+    --text: #3A3531; --text-2: #6B655F; --text-3: #9C968E;
+    --border: rgba(0,0,0,0.05); --border-2: rgba(0,0,0,0.10);
+    --accent: #C97B8E; --shadow: 0 2px 6px rgba(0,0,0,0.04);
+    --radius: 16px; --radius-sm: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1F1D1B; --surface: #2A2826; --surface-2: #353230;
+      --text: #E8E2D8; --text-2: #B0A99F; --text-3: #847E76;
+      --border: rgba(255,255,255,0.06); --border-2: rgba(255,255,255,0.12);
+      --accent: #E2A2B2; --shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+  }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", sans-serif;
+    font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased; overscroll-behavior-y: none;
+  }
+  body {
+    max-width: 480px; margin: 0 auto;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    min-height: 100vh;
+  }
+  .app { padding: 16px 16px 24px; }
+  .header {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 8px 4px 16px;
+  }
+  .header-emoji { font-size: 24px; }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
+  .mode-toggle {
+    display: flex; gap: 4px;
+    background: var(--surface-2); padding: 4px;
+    border-radius: 999px; margin-bottom: 16px;
+  }
+  .mode-btn {
+    flex: 1; background: transparent; border: none;
+    padding: 8px 6px; font-size: 12px; font-weight: 500;
+    color: var(--text-2); cursor: pointer; border-radius: 999px;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .mode-btn.active {
+    background: var(--surface); color: var(--text);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06); font-weight: 600;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .flash-page { display: flex; flex-direction: column; }
+  .quiz-progress {
+    font-size: 12px; color: var(--text-3); text-align: center;
+    margin-bottom: 12px; font-weight: 500; letter-spacing: 0.5px;
+  }
+  .flashcard {
+    background: #E8E2F0; border-radius: 24px;
+    padding: 22px 22px 24px; cursor: pointer;
+    user-select: none; -webkit-user-select: none;
+    box-shadow: var(--shadow); overflow: hidden;
+    transition: transform 0.1s, opacity 0.15s;
+    margin-bottom: 16px; position: relative;
+    display: flex; flex-direction: column; min-height: 440px;
+  }
+  .flashcard:active { transform: scale(0.99); }
+  .flash-top {
+    display: flex; justify-content: center; align-items: center;
+    margin-bottom: 16px;
+  }
+  .flash-category {
+    font-size: 13px; font-weight: 500;
+    color: rgba(58,53,49,0.7);
+    background: rgba(255,255,255,0.45);
+    padding: 4px 12px; border-radius: 999px;
+  }
+  .flash-body {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 8px 0;
+  }
+  .flash-example-area { width: 100%; margin-bottom: 20px; }
+  .flash-example-ko {
+    font-size: 24px; font-weight: 600;
+    color: rgba(58,53,49,0.95); line-height: 1.4;
+    letter-spacing: -0.5px; margin-bottom: 12px;
+  }
+  .flash-example-cn {
+    font-size: 22px; font-weight: 600;
+    color: rgba(58,53,49,0.92); line-height: 1.4;
+    letter-spacing: -0.5px; margin-bottom: 8px;
+    display: none;
+  }
+  .flashcard.flipped .flash-example-cn { display: block; }
+  .flash-example-pinyin {
+    font-size: 13px; color: rgba(58,53,49,0.55);
+    font-style: italic; display: none;
+  }
+  .flashcard.flipped .flash-example-pinyin { display: block; }
+  .flash-front-meaning {
+    display: inline-block; background: rgba(58,53,49,0.10);
+    color: rgba(58,53,49,0.78); padding: 7px 16px;
+    border-radius: 999px; font-size: 13px; font-weight: 500;
+  }
+  .flashcard.flipped .flash-front-meaning { display: none; }
+  .flash-back-info {
+    display: none; width: 100%; padding-top: 18px;
+    border-top: 1px solid rgba(58,53,49,0.12);
+  }
+  .flashcard.flipped .flash-back-info { display: block; }
+  .flash-back-chinese {
+    font-size: 22px; font-weight: 600;
+    color: rgba(58,53,49,0.95); line-height: 1.2;
+    letter-spacing: -0.3px; margin-bottom: 6px;
+  }
+  .flash-back-meaning { font-size: 13px; color: rgba(58,53,49,0.75); margin-bottom: 4px; }
+  .flash-back-pinyin { font-size: 13px; color: rgba(58,53,49,0.55); font-style: italic; }
+  .flash-note {
+    font-size: 12px; color: rgba(58,53,49,0.55);
+    font-style: italic; padding: 8px 8px 0; margin-top: 4px;
+  }
+  .flash-hint { margin-top: 16px; text-align: center; font-size: 12px; color: rgba(58,53,49,0.42); }
+  .quiz-controls { display: flex; gap: 8px; align-items: center; }
+  .quiz-btn {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    padding: 14px 10px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    color: var(--text); font-family: inherit; transition: all 0.1s;
+  }
+  .quiz-btn:active { background: var(--surface-2); transform: scale(0.97); }
+  .quiz-btn.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .fav-center-btn {
+    width: 50px; height: 50px; flex-shrink: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 50%; cursor: pointer;
+    color: var(--text-3); font-size: 22px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .fav-center-btn:active { transform: scale(0.9); }
+  .fav-center-btn.active { background: #FCE6EC; color: var(--accent); border-color: #F5C8D2; }
+  @media (prefers-color-scheme: dark) {
+    .fav-center-btn.active { background: #4A2530; color: var(--accent); border-color: #6B3645; }
+  }
+  .search-input {
+    width: 100%; padding: 12px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text);
+    font-size: 14px; font-family: inherit;
+    margin-bottom: 12px; -webkit-appearance: none; text-align: center;
+  }
+  .search-input:focus { outline: none; border-color: var(--border-2); }
+  .filter-row {
+    display: flex; gap: 6px; overflow-x: auto;
+    padding-bottom: 4px; margin-bottom: 12px; scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 12px; cursor: pointer; color: var(--text-2);
+    white-space: nowrap; font-family: inherit;
+    flex-shrink: 0; font-weight: 500;
+  }
+  .filter-chip.active { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .stats-row {
+    font-size: 11px; color: var(--text-3);
+    margin-bottom: 12px; text-align: center;
+    font-weight: 500; letter-spacing: 0.3px;
+  }
+  .vocab-list { display: flex; flex-direction: column; gap: 10px; }
+  .vocab-card {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 16px 14px 14px; position: relative;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    text-align: center;
+  }
+  .vocab-card-top {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 10px; gap: 10px;
+  }
+  .vocab-category {
+    display: inline-block; font-size: 10px;
+    padding: 3px 8px; border-radius: 999px;
+    background: var(--surface-2); color: var(--text-2);
+    font-weight: 500; letter-spacing: 0.3px;
+  }
+  .fav-btn {
+    background: transparent; border: none; cursor: pointer;
+    padding: 0; color: var(--text-3);
+    font-size: 22px; line-height: 1; flex-shrink: 0;
+  }
+  .fav-btn.active { color: var(--accent); }
+  .fav-btn:active { transform: scale(0.85); }
+  .vocab-meaning {
+    font-size: 17px; font-weight: 600; color: var(--text);
+    margin-bottom: 8px; line-height: 1.3; letter-spacing: -0.3px;
+  }
+  .vocab-chinese-row {
+    display: flex; align-items: baseline; gap: 8px;
+    flex-wrap: wrap; margin-bottom: 3px; justify-content: center;
+  }
+  .vocab-chinese { font-size: 18px; font-weight: 500; color: var(--text); }
+  .vocab-pinyin { font-size: 13px; color: var(--text-2); font-style: italic; }
+  .vocab-tone { font-size: 10px; color: var(--text-3); margin-bottom: 10px; letter-spacing: 0.3px; }
+  .vocab-example { background: var(--surface-2); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 13px; }
+  .vocab-example-ko { color: var(--text); margin-bottom: 3px; font-weight: 500; }
+  .vocab-example-cn { color: var(--text-2); font-size: 12px; }
+  .vocab-note { font-size: 11px; color: var(--text-3); margin-top: 8px; font-style: italic; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-3); font-size: 13px; }
+  .empty-state-emoji { font-size: 36px; margin-bottom: 8px; opacity: 0.6; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <span class="header-emoji">🍡</span>
+    <h1>Dang-go</h1>
+  </div>
+
+  <!-- 플래시카드가 첫 번째 (active) -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="all">전체</button>
+    <button class="mode-btn" data-mode="fav">즐겨찾기</button>
+    <button class="mode-btn" data-mode="list">리스트 보기</button>
+  </div>
+
+  <div class="tab-content active" id="tab-all">
+    <div class="flash-page">
+      <div class="quiz-progress" id="quiz-progress-all">1 / 0</div>
+      <div class="flashcard" id="flashcard-all" onclick="handleCardClick(event, 'all')">
+        <div class="flash-top"><span class="flash-category" id="card-category-all"></span></div>
+        <div class="flash-body">
+          <div class="flash-example-area">
+            <div class="flash-example-ko" id="card-ex-ko-all"></div>
+            <div class="flash-example-cn" id="card-ex-cn-all"></div>
+            <div class="flash-example-pinyin" id="card-ex-pinyin-all"></div>
+          </div>
+          <div class="flash-front-meaning" id="card-meaning-front-all"></div>
+          <div class="flash-back-info">
+            <div class="flash-back-chinese" id="card-chinese-all"></div>
+            <div class="flash-back-meaning" id="card-meaning-back-all"></div>
+            <div class="flash-back-pinyin" id="card-pinyin-all"></div>
+            <div class="flash-note" id="card-note-all"></div>
+          </div>
+          <div class="flash-hint" id="card-hint-all">탭해서 정답 보기</div>
+        </div>
+      </div>
+      <div class="quiz-controls">
+        <button class="quiz-btn" onclick="prevCard('all')">← 이전</button>
+        <button class="fav-center-btn" id="card-fav-all" onclick="toggleCardFav(event, 'all')" aria-label="즐겨찾기">♡</button>
+        <button class="quiz-btn primary" onclick="nextCard('all')">다음 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-fav">
+    <div class="flash-page">
+      <div class="quiz-progress" id="quiz-progress-fav">0 / 0</div>
+      <div class="flashcard" id="flashcard-fav" onclick="handleCardClick(event, 'fav')">
+        <div class="flash-top"><span class="flash-category" id="card-category-fav"></span></div>
+        <div class="flash-body">
+          <div class="flash-example-area">
+            <div class="flash-example-ko" id="card-ex-ko-fav"></div>
+            <div class="flash-example-cn" id="card-ex-cn-fav"></div>
+            <div class="flash-example-pinyin" id="card-ex-pinyin-fav"></div>
+          </div>
+          <div class="flash-front-meaning" id="card-meaning-front-fav"></div>
+          <div class="flash-back-info">
+            <div class="flash-back-chinese" id="card-chinese-fav"></div>
+            <div class="flash-back-meaning" id="card-meaning-back-fav"></div>
+            <div class="flash-back-pinyin" id="card-pinyin-fav"></div>
+            <div class="flash-note" id="card-note-fav"></div>
+          </div>
+          <div class="flash-hint" id="card-hint-fav">탭해서 정답 보기</div>
+        </div>
+      </div>
+      <div class="quiz-controls">
+        <button class="quiz-btn" onclick="prevCard('fav')">← 이전</button>
+        <button class="fav-center-btn" id="card-fav-fav" onclick="toggleCardFav(event, 'fav')" aria-label="즐겨찾기">♡</button>
+        <button class="quiz-btn primary" onclick="nextCard('fav')">다음 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-list">
+    <input type="text" id="search-input" class="search-input" placeholder="🔍 한국어 / 중국어 / 병음 검색" />
+    <div class="filter-row" id="filter-chips"></div>
+    <div class="stats-row" id="stats-row"></div>
+    <div class="vocab-list" id="vocab-list"></div>
+  </div>
+</div>
+
+<script>
+const VOCAB = [
+  {cat:"제품/디자인", cn:"设计", py:"shè jì", tone:"4성+4성", mean:"디자인", ex_cn:"新的产品设计已经完成了。", ex_py:"xīn de chǎn pǐn shè jì yǐ jīng wán chéng le", ex_ko:"새 제품 디자인이 완료됐어요.", note:"", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"设计稿", py:"shè jì gǎo", tone:"4성+4성+3성", mean:"디자인 시안", ex_cn:"设计稿可以马上发给你。", ex_py:"shè jì gǎo kě yǐ mǎ shàng fā gěi nǐ", ex_ko:"디자인 시안 바로 보내드릴게요.", note:"稿=원고/시안", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"款式", py:"kuǎn shì", tone:"3성+4성", mean:"종류, 스타일, 모델", ex_cn:"目前有两种款式。", ex_py:"mù qián yǒu liǎng zhǒng kuǎn shì", ex_ko:"현재 두 가지 종류가 있어요.", note:"", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"这款", py:"zhè kuǎn", tone:"4성+3성", mean:"이 (제품/모델)", ex_cn:"我们这款产品要增加尺寸。", ex_py:"wǒ men zhè kuǎn chǎn pǐn yào zēng jiā chǐ cùn", ex_ko:"이 제품 사이즈를 늘릴 거예요.", note:"제품 가리킬 때", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"种类", py:"zhǒng lèi", tone:"3성+4성", mean:"종류 (큰 개념)", ex_cn:"我想再增加产品种类。", ex_py:"wǒ xiǎng zài zēng jiā chǎn pǐn zhǒng lèi", ex_ko:"제품 종류를 더 늘리고 싶어요.", note:"", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"潘通色", py:"pān tōng sè", tone:"1성+1성+4성", mean:"팬톤 컬러", ex_cn:"里面有包含潘通色。", ex_py:"lǐ miàn yǒu bāo hán pān tōng sè", ex_ko:"팬톤 컬러가 포함되어 있어요.", note:"", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"渐变色", py:"jiàn biàn sè", tone:"4성+4성+4성", mean:"그라데이션 색상", ex_cn:"小的产品有渐变色。", ex_py:"xiǎo de chǎn pǐn yǒu jiàn biàn sè", ex_ko:"작은 제품은 그라데이션이 있어요.", note:"", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"尺寸", py:"chǐ cùn", tone:"3성+4성", mean:"사이즈, 치수", ex_cn:"小尺寸的产品。", ex_py:"xiǎo chǐ cùn de chǎn pǐn", ex_ko:"작은 사이즈 제품.", note:"", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"规格", py:"guī gé", tone:"1성+2성", mean:"규격, 스펙", ex_cn:"其他款式的规格在设计中。", ex_py:"qí tā kuǎn shì de guī gé zài shè jì zhōng", ex_ko:"다른 디자인의 규격은 디자인 중이에요.", note:"제품 사양", color:"#E8E2F0"},
+  {cat:"제품/디자인", cn:"方形", py:"fāng xíng", tone:"1성+2성", mean:"사각형", ex_cn:"方形裁切得整齐一点。", ex_py:"fāng xíng cái qiē de zhěng qí yì diǎn", ex_ko:"사각형은 깔끔하게 재단해 주세요.", note:"", color:"#E8E2F0"},
+  {cat:"생산/제작", cn:"样品", py:"yàng pǐn", tone:"4성+3성", mean:"샘플 (완성된 물건)", ex_cn:"我想顺便拿样品。", ex_py:"wǒ xiǎng shùn biàn ná yàng pǐn", ex_ko:"샘플도 같이 받고 싶어요.", note:"물건 자체", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"打样", py:"dǎ yàng", tone:"3성+4성", mean:"샘플 제작 (행위)", ex_cn:"我看下打样费多少。", ex_py:"wǒ kàn xià dǎ yàng fèi duō shǎo", ex_ko:"샘플 제작비 얼마인지 볼게요.", note:"만드는 행위", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"打样费", py:"dǎ yàng fèi", tone:"3성+4성+4성", mean:"샘플 제작비", ex_cn:"打样费挺贵的。", ex_py:"dǎ yàng fèi tǐng guì de", ex_ko:"샘플 제작비가 꽤 비싸네요.", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"裁切", py:"cái qiē", tone:"2성+1성", mean:"재단하다", ex_cn:"方形裁切得整齐。", ex_py:"fāng xíng cái qiē de zhěng qí", ex_ko:"사각형을 깔끔하게 재단하다.", note:"전문 용어", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"整齐", py:"zhěng qí", tone:"3성+2성", mean:"깔끔하다, 가지런하다", ex_cn:"裁切得整齐一点。", ex_py:"cái qiē de zhěng qí yì diǎn", ex_ko:"좀 더 깔끔하게 재단해 주세요.", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"印刷", py:"yìn shuā", tone:"4성+1성", mean:"인쇄", ex_cn:"印刷的时候注意。", ex_py:"yìn shuā de shí hou zhù yì", ex_ko:"인쇄할 때 주의해 주세요.", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"油墨", py:"yóu mò", tone:"2성+4성", mean:"잉크", ex_cn:"不要让油墨堆积。", ex_py:"bú yào ràng yóu mò duī jī", ex_ko:"잉크가 뭉치지 않게 해주세요.", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"堆积", py:"duī jī", tone:"1성+1성", mean:"쌓이다, 뭉치다", ex_cn:"油墨不要堆积。", ex_py:"yóu mò bú yào duī jī", ex_ko:"잉크가 뭉치지 않게.", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"核算", py:"hé suàn", tone:"2성+4성", mean:"계산하다, 원가 산출", ex_cn:"在核算。", ex_py:"zài hé suàn", ex_ko:"계산 중이에요.", note:"꼼꼼히 따짐", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"生产成本", py:"shēng chǎn chéng běn", tone:"1성+3성+2성+3성", mean:"생산 원가", ex_cn:"生产成本还没有涨。", ex_py:"shēng chǎn chéng běn hái méi yǒu zhǎng", ex_ko:"생산 원가는 아직 안 올랐어요.", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"节省成本", py:"jié shěng chéng běn", tone:"2성+3성+2성+3성", mean:"원가를 절감하다", ex_cn:"为了节省成本。", ex_py:"wèi le jié shěng chéng běn", ex_ko:"원가 절감을 위해서.", note:"비즈니스 정석", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"安排生产", py:"ān pái shēng chǎn", tone:"1성+2성+1성+3성", mean:"생산을 진행하다", ex_cn:"看局势再安排生产。", ex_py:"kàn jú shì zài ān pái shēng chǎn", ex_ko:"상황 봐서 생산 진행할게요.", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"原材料", py:"yuán cái liào", tone:"2성+2성+4성", mean:"원자재", ex_cn:"原材料涨了这么高。", ex_py:"yuán cái liào zhǎng le zhè me gāo", ex_ko:"원자재가 이렇게 많이 올랐어요.", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"制作", py:"zhì zuò", tone:"4성+4성", mean:"제작하다", ex_cn:"制作完成是6月初。", ex_py:"zhì zuò wán chéng shì liù yuè chū", ex_ko:"제작 완료는 6월 초예요.", note:"공식 표현", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"完成", py:"wán chéng", tone:"2성+2성", mean:"완성하다, 완료하다", ex_cn:"什么时候完成?", ex_py:"shén me shí hou wán chéng", ex_ko:"언제 완성되나요?", note:"", color:"#F5E8D5"},
+  {cat:"생산/제작", cn:"仔细", py:"zǐ xì", tone:"3성+4성", mean:"꼼꼼하게, 세심하게", ex_cn:"麻烦您仔细做产品。", ex_py:"má fan nín zǐ xì zuò chǎn pǐn", ex_ko:"제품 꼼꼼하게 만들어 주세요.", note:"품질 요청 핵심", color:"#F5E8D5"},
+  {cat:"품질/검수", cn:"质量", py:"zhì liàng", tone:"4성+4성", mean:"품질", ex_cn:"质量麻烦您多注意。", ex_py:"zhì liàng má fan nín duō zhù yì", ex_ko:"품질 신경 써 주세요.", note:"", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"合格", py:"hé gé", tone:"2성+2성", mean:"적합한, 합격한", ex_cn:"收到合格的产品。", ex_py:"shōu dào hé gé de chǎn pǐn", ex_ko:"적합한 제품을 받다.", note:"", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"不合格", py:"bù hé gé", tone:"4성+2성+2성", mean:"불합격, 부적합", ex_cn:"不合格的产品要退回。", ex_py:"bù hé gé de chǎn pǐn yào tuì huí", ex_ko:"불량품은 반품해야 해요.", note:"", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"不良品", py:"bù liáng pǐn", tone:"4성+2성+3성", mean:"불량품", ex_cn:"只要没有不良品的问题。", ex_py:"zhǐ yào méi yǒu bù liáng pǐn de wèn tí", ex_ko:"불량품 문제만 없으면.", note:"", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"开口", py:"kāi kǒu", tone:"1성+3성", mean:"입구, 벌어진 부분", ex_cn:"之前有开口问题。", ex_py:"zhī qián yǒu kāi kǒu wèn tí", ex_ko:"이전에 입구 문제가 있었어요.", note:"제품 결함", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"压痕", py:"yā hén", tone:"1성+2성", mean:"찍힘 자국", ex_cn:"压痕的问题。", ex_py:"yā hén de wèn tí", ex_ko:"찍힘 문제.", note:"제품 결함", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"数量问题", py:"shù liàng wèn tí", tone:"4성+4성+4성+2성", mean:"수량 문제", ex_cn:"没有数量问题。", ex_py:"méi yǒu shù liàng wèn tí", ex_ko:"수량 문제가 없어요.", note:"", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"核对", py:"hé duì", tone:"2성+4성", mean:"(꼼꼼히) 대조 확인", ex_cn:"麻烦您再核对一下。", ex_py:"má fan nín zài hé duì yí xià", ex_ko:"한번 더 확인 부탁드려요.", note:"꼼꼼한 확인", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"一次性", py:"yí cì xìng", tone:"2성+4성+4성", mean:"한 번에", ex_cn:"一次性收到产品。", ex_py:"yí cì xìng shōu dào chǎn pǐn", ex_ko:"한 번에 제품을 받다.", note:"분할 X", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"按时", py:"àn shí", tone:"4성+2성", mean:"제때, 정시에", ex_cn:"按时发货。", ex_py:"àn shí fā huò", ex_ko:"제때 발송하다.", note:"비즈니스 필수", color:"#D5E8E0"},
+  {cat:"품질/검수", cn:"出问题", py:"chū wèn tí", tone:"1성+4성+2성", mean:"문제가 생기다", ex_cn:"会出问题。", ex_py:"huì chū wèn tí", ex_ko:"문제가 생길 거예요.", note:"", color:"#D5E8E0"},
+  {cat:"비즈니스 표현", cn:"其实", py:"qí shí", tone:"2성+2성", mean:"사실은", ex_cn:"其实只要没问题。", ex_py:"qí shí zhǐ yào méi wèn tí", ex_ko:"사실 문제만 없으면.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"增加", py:"zēng jiā", tone:"1성+1성", mean:"늘리다, 증가시키다", ex_cn:"我想增加产品种类。", ex_py:"wǒ xiǎng zēng jiā chǎn pǐn zhǒng lèi", ex_ko:"제품 종류를 늘리고 싶어요.", note:"전체 양/종류", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"追加", py:"zhuī jiā", tone:"1성+1성", mean:"추가하다 (기존+더)", ex_cn:"我打算追加产品。", ex_py:"wǒ dǎ suàn zhuī jiā chǎn pǐn", ex_ko:"제품을 추가할 계획이에요.", note:"추가 주문", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"打算", py:"dǎ suàn", tone:"3성+4성", mean:"~할 계획이다", ex_cn:"我有打算追加更多产品。", ex_py:"wǒ yǒu dǎ suàn zhuī jiā gèng duō chǎn pǐn", ex_ko:"제품을 더 추가할 계획이 있어요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"挺", py:"tǐng", tone:"3성", mean:"꽤, 상당히", ex_cn:"挺贵的呢。", ex_py:"tǐng guì de ne", ex_ko:"꽤 비싸네요.", note:"挺~的 구조", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"应该", py:"yīng gāi", tone:"1성+1성", mean:"~일 것이다", ex_cn:"应该也没问题吧?", ex_py:"yīng gāi yě méi wèn tí ba", ex_ko:"아마 문제 없겠죠?", note:"추측", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"才", py:"cái", tone:"2성", mean:"그래서 비로소 (강조)", ex_cn:"因为复杂，才想看样品。", ex_py:"yīn wèi fù zá, cái xiǎng kàn yàng pǐn", ex_ko:"복잡하니까 샘플 보려는 거예요.", note:"이유 강조", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"复杂", py:"fù zá", tone:"4성+2성", mean:"복잡하다", ex_cn:"小的产品比较复杂。", ex_py:"xiǎo de chǎn pǐn bǐ jiào fù zá", ex_ko:"작은 제품이 좀 복잡해요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"简单", py:"jiǎn dān", tone:"3성+1성", mean:"간단하다", ex_cn:"做起来比较简单。", ex_py:"zuò qǐ lái bǐ jiào jiǎn dān", ex_ko:"만들기에 비교적 간단해요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"如果", py:"rú guǒ", tone:"2성+3성", mean:"만약 ~라면", ex_cn:"如果再多加几个的话。", ex_py:"rú guǒ zài duō jiā jǐ ge de huà", ex_ko:"만약 몇 개 더 추가한다면.", note:"如果~的话", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"顺便", py:"shùn biàn", tone:"4성+4성", mean:"~하는 김에", ex_cn:"我想顺便拿样品。", ex_py:"wǒ xiǎng shùn biàn ná yàng pǐn", ex_ko:"하는 김에 샘플도 받고 싶어요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"是否", py:"shì fǒu", tone:"4성+3성", mean:"~인지 아닌지 (정중)", ex_cn:"看一下是否能接受。", ex_py:"kàn yí xià shì fǒu néng jiē shòu", ex_ko:"받아들이실 수 있는지 한번 보세요.", note:"격식 표현", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"麻烦", py:"má fan", tone:"2성+경성", mean:"부탁드리다", ex_cn:"麻烦您联系我。", ex_py:"má fan nín lián xì wǒ", ex_ko:"연락 부탁드립니다.", note:"정중한 부탁", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"确认", py:"què rèn", tone:"4성+4성", mean:"확인하다", ex_cn:"请您确认一下。", ex_py:"qǐng nín què rèn yí xià", ex_ko:"확인 부탁드립니다.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"接受", py:"jiē shòu", tone:"1성+4성", mean:"받아들이다, 수용하다", ex_cn:"这个价格可以接受。", ex_py:"zhè ge jià gé kě yǐ jiē shòu", ex_ko:"이 가격은 받아들일 수 있어요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"等于", py:"děng yú", tone:"3성+2성", mean:"~와 같다, 즉", ex_cn:"等于是4500元。", ex_py:"děng yú shì sì qiān wǔ bǎi yuán", ex_ko:"즉 4,500위안인 셈이에요.", note:"수학/논리", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"等于说", py:"děng yú shuō", tone:"3성+2성+1성", mean:"즉, 다시 말해", ex_cn:"等于说是30美金。", ex_py:"děng yú shuō shì sān shí měi jīn", ex_ko:"즉 30달러라는 거예요.", note:"구체 예시", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"作为参考", py:"zuò wéi cān kǎo", tone:"4성+2성+1성+3성", mean:"참고로 삼다", ex_cn:"可以作为参考。", ex_py:"kě yǐ zuò wéi cān kǎo", ex_ko:"참고할 수 있어요.", note:"비즈니스 격식", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"到时候", py:"dào shí hòu", tone:"4성+2성+경성", mean:"그때, 추후에", ex_cn:"到时候再联系您。", ex_py:"dào shí hòu zài lián xì nín", ex_ko:"그때 다시 연락드릴게요.", note:"미래 시점", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"先", py:"xiān", tone:"1성", mean:"우선, 먼저", ex_cn:"我们就先下单5000套。", ex_py:"wǒ men jiù xiān xià dān wǔ qiān tào", ex_ko:"우선 5000세트 발주할게요.", note:"단계별 진행", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"理解", py:"lǐ jiě", tone:"3성+3성", mean:"이해하다", ex_cn:"谢谢您的理解。", ex_py:"xiè xie nín de lǐ jiě", ex_ko:"이해해 주셔서 감사합니다.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"作为", py:"zuò wéi", tone:"4성+2성", mean:"~로서 (입장)", ex_cn:"我们作为工厂。", ex_py:"wǒ men zuò wéi gōng chǎng", ex_ko:"저희는 공장 입장에서.", note:"입장 강조", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"没办法", py:"méi bàn fǎ", tone:"2성+4성+3성", mean:"어쩔 수 없다", ex_cn:"我们没有办法。", ex_py:"wǒ men méi yǒu bàn fǎ", ex_ko:"저희도 어쩔 수 없어요.", note:"줄인 표현", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"按照", py:"àn zhào", tone:"4성+4성", mean:"~에 따라, ~대로", ex_cn:"按照实际购买的内容。", ex_py:"àn zhào shí jì gòu mǎi de nèi róng", ex_ko:"실제 구매 내용대로.", note:"비즈니스 격식", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"考虑", py:"kǎo lǜ", tone:"3성+4성", mean:"고려하다", ex_cn:"以后可以考虑PayPal。", ex_py:"yǐ hòu kě yǐ kǎo lǜ PayPal", ex_ko:"추후 페이팔 고려 가능해요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"信任", py:"xìn rèn", tone:"4성+4성", mean:"신뢰", ex_cn:"直接转账有信任问题。", ex_py:"zhí jiē zhuǎn zhàng yǒu xìn rèn wèn tí", ex_ko:"직접 이체는 신뢰 문제가 있어요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"实际", py:"shí jì", tone:"2성+4성", mean:"실제로", ex_cn:"实际购买的产品。", ex_py:"shí jì gòu mǎi de chǎn pǐn", ex_ko:"실제 구매한 제품.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"修改", py:"xiū gǎi", tone:"1성+3성", mean:"수정하다", ex_cn:"麻烦您修改一下。", ex_py:"má fan nín xiū gǎi yí xià", ex_ko:"수정 부탁드려요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"重新", py:"chóng xīn", tone:"2성+1성", mean:"다시, 새로", ex_cn:"重新做一份订单。", ex_py:"chóng xīn zuò yí fèn dìng dān", ex_ko:"주문서를 다시 만들어 주세요.", note:"처음부터 다시", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"刚刚", py:"gāng gāng", tone:"1성+1성", mean:"방금, 막", ex_cn:"刚刚已经付款了。", ex_py:"gāng gāng yǐ jīng fù kuǎn le", ex_ko:"방금 결제했어요.", note:"", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"左右", py:"zuǒ yòu", tone:"3성+4성", mean:"정도, 쯤", ex_cn:"6月初左右。", ex_py:"liù yuè chū zuǒ yòu", ex_ko:"6월 초 정도.", note:"대략", color:"#DEEAD2"},
+  {cat:"비즈니스 표현", cn:"月初", py:"yuè chū", tone:"4성+1성", mean:"월초", ex_cn:"6月初制作完成。", ex_py:"liù yuè chū zhì zuò wán chéng", ex_ko:"6월 초 제작 완료.", note:"vs 月底(월말)", color:"#DEEAD2"},
+  {cat:"가격 협상", cn:"价格", py:"jià gé", tone:"4성+2성", mean:"가격", ex_cn:"这个价格我们可以接受。", ex_py:"zhè ge jià gé wǒ men kě yǐ jiē shòu", ex_ko:"이 가격은 받아들일 수 있어요.", note:"", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"涨", py:"zhǎng", tone:"3성", mean:"(값이) 오르다", ex_cn:"价格涨了。", ex_py:"jià gé zhǎng le", ex_ko:"가격이 올랐어요.", note:"", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"涨了", py:"zhǎng le", tone:"3성+경성", mean:"올랐다 (완료)", ex_cn:"原材料涨了。", ex_py:"yuán cái liào zhǎng le", ex_ko:"원자재가 올랐어요.", note:"了=변화/완료", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"涨价", py:"zhǎng jià", tone:"3성+4성", mean:"가격이 오르다", ex_cn:"为什么涨价了?", ex_py:"wèi shén me zhǎng jià le", ex_ko:"왜 가격이 올랐어요?", note:"", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"涨幅", py:"zhǎng fú", tone:"3성+2성", mean:"인상폭, 상승폭", ex_cn:"涨幅有点高。", ex_py:"zhǎng fú yǒu diǎn gāo", ex_ko:"인상폭이 좀 높네요.", note:"정중한 표현", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"降到", py:"jiàng dào", tone:"4성+4성", mean:"~까지 내리다", ex_cn:"价格降到0.11元。", ex_py:"jià gé jiàng dào líng diǎn yī yī yuán", ex_ko:"가격을 0.11위안까지 내려드릴게요.", note:"구체적 인하", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"降低", py:"jiàng dī", tone:"4성+1성", mean:"낮추다, 절감하다", ex_cn:"降低价格。", ex_py:"jiàng dī jià gé", ex_ko:"가격을 낮추다.", note:"격식", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"优惠", py:"yōu huì", tone:"1성+4성", mean:"할인, 우대", ex_cn:"能不能再优惠一些?", ex_py:"néng bu néng zài yōu huì yì xiē", ex_ko:"좀 더 할인 가능할까요?", note:"비즈니스 격식", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"商量", py:"shāng liang", tone:"1성+경성", mean:"상의하다", ex_cn:"能再商量一下吗?", ex_py:"néng zài shāng liang yí xià ma", ex_ko:"다시 상의해주실 수 있나요?", note:"", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"补差价", py:"bǔ chā jià", tone:"3성+1성+4성", mean:"차액을 보전하다", ex_cn:"我们补差价。", ex_py:"wǒ men bǔ chā jià", ex_ko:"차액을 보전해드릴게요.", note:"무역 거래", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"单价", py:"dān jià", tone:"1성+4성", mean:"단가", ex_cn:"单价和之前一样。", ex_py:"dān jià hé zhī qián yí yàng", ex_ko:"단가는 이전과 똑같아요.", note:"", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"压力", py:"yā lì", tone:"1성+4성", mean:"부담, 압박", ex_cn:"这个单价对我们压力太大。", ex_py:"zhè ge dān jià duì wǒ men yā lì tài dà", ex_ko:"이 단가는 저희에게 부담이 너무 커요.", note:"부드러운 부담 표현", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"说不过去", py:"shuō bu guò qù", tone:"1성+경성+4성+4성", mean:"말이 안 된다", ex_cn:"18%真的说不过去。", ex_py:"bǎi fēn zhī shí bā zhēn de shuō bu guò qù", ex_ko:"18%는 정말 말이 안 돼요.", note:"강한 반박", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"很难做", py:"hěn nán zuò", tone:"3성+2성+4성", mean:"진행하기 어렵다", ex_cn:"这样很难做。", ex_py:"zhè yàng hěn nán zuò", ex_ko:"이러면 진행하기 힘들어요.", note:"완곡 표현", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"做不下去", py:"zuò bu xià qù", tone:"4성+경성+4성+4성", mean:"진행할 수가 없다", ex_cn:"这个价格做不下去。", ex_py:"zhè ge jià gé zuò bu xià qù", ex_ko:"이 가격으로는 진행 못 해요.", note:"단호한 표현", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"让步", py:"ràng bù", tone:"4성+4성", mean:"양보하다", ex_cn:"谢谢您的让步。", ex_py:"xiè xie nín de ràng bù", ex_ko:"양보해 주셔서 감사합니다.", note:"", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"量大从优", py:"liàng dà cóng yōu", tone:"4성+4성+2성+1성", mean:"수량 많으면 할인", ex_cn:"量大从优吗?", ex_py:"liàng dà cóng yōu ma", ex_ko:"수량 많으면 할인되나요?", note:"4자 성어", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"长期合作", py:"cháng qī hé zuò", tone:"2성+1성+2성+4성", mean:"장기 협력", ex_cn:"我们想长期合作。", ex_py:"wǒ men xiǎng cháng qī hé zuò", ex_ko:"저희는 장기 협력을 원해요.", note:"협상 카드", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"客源", py:"kè yuán", tone:"4성+2성", mean:"거래처, 안정적 고객", ex_cn:"工厂要有稳定的客源。", ex_py:"gōng chǎng yào yǒu wěn dìng de kè yuán", ex_ko:"공장은 안정적인 거래처가 필요해요.", note:"지속 거래", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"工厂", py:"gōng chǎng", tone:"1성+3성", mean:"공장", ex_cn:"工厂也要生存。", ex_py:"gōng chǎng yě yào shēng cún", ex_ko:"공장도 살아남아야 해요.", note:"", color:"#F4DCE3"},
+  {cat:"가격 협상", cn:"生存", py:"shēng cún", tone:"1성+2성", mean:"생존하다", ex_cn:"工厂也要生存。", ex_py:"gōng chǎng yě yào shēng cún", ex_ko:"공장도 살아남아야 해요.", note:"호소형", color:"#F4DCE3"},
+  {cat:"결제/납기", cn:"付款", py:"fù kuǎn", tone:"4성+3성", mean:"결제하다, 지불하다", ex_cn:"可以用PayPal付款吗?", ex_py:"kě yǐ yòng PayPal fù kuǎn ma", ex_ko:"페이팔로 결제할 수 있을까요?", note:"일상 표현", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"支付", py:"zhī fù", tone:"1성+4성", mean:"지불하다 (격식)", ex_cn:"微信支付。", ex_py:"wēi xìn zhī fù", ex_ko:"위챗 페이.", note:"공식 표현", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"转账", py:"zhuǎn zhàng", tone:"3성+4성", mean:"송금, 계좌이체", ex_cn:"银行转账。", ex_py:"yín háng zhuǎn zhàng", ex_ko:"은행 송금.", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"货款", py:"huò kuǎn", tone:"4성+3성", mean:"물품 대금", ex_cn:"货款怎么付?", ex_py:"huò kuǎn zěn me fù", ex_ko:"대금은 어떻게 지불하나요?", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"定金", py:"dìng jīn", tone:"4성+1성", mean:"계약금, 선금", ex_cn:"30%定金。", ex_py:"bǎi fēn zhī sān shí dìng jīn", ex_ko:"30% 계약금.", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"尾款", py:"wěi kuǎn", tone:"3성+3성", mean:"잔금", ex_cn:"70%尾款。", ex_py:"bǎi fēn zhī qī shí wěi kuǎn", ex_ko:"70% 잔금.", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"电汇", py:"diàn huì", tone:"4성+4성", mean:"전신환 (T/T)", ex_cn:"电汇付款。", ex_py:"diàn huì fù kuǎn", ex_ko:"전신환으로 결제.", note:"무역 거래", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"发货", py:"fā huò", tone:"1성+4성", mean:"발송, 출고", ex_cn:"发货之前一个月就够了。", ex_py:"fā huò zhī qián yí ge yuè jiù gòu le", ex_ko:"발송 전 한 달이면 충분해요.", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"到货", py:"dào huò", tone:"4성+4성", mean:"도착, 입고", ex_cn:"什么时候到货?", ex_py:"shén me shí hou dào huò", ex_ko:"언제 도착해요?", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"交货期", py:"jiāo huò qī", tone:"1성+4성+1성", mean:"납기일", ex_cn:"交货期是什么时候?", ex_py:"jiāo huò qī shì shén me shí hou", ex_ko:"납기일은 언제인가요?", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"够", py:"gòu", tone:"4성", mean:"충분하다", ex_cn:"一个月就够了。", ex_py:"yí ge yuè jiù gòu le", ex_ko:"한 달이면 충분해요.", note:"구어체", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"足够", py:"zú gòu", tone:"2성+4성", mean:"충분하다 (강조)", ex_cn:"时间足够了。", ex_py:"shí jiān zú gòu le", ex_ko:"시간이 충분합니다.", note:"좀 더 격식", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"开发票", py:"kāi fā piào", tone:"1성+1성+4성", mean:"인보이스 발행", ex_cn:"用PayPal开发票给我们。", ex_py:"yòng PayPal kāi fā piào gěi wǒ men", ex_ko:"페이팔로 인보이스 발행해 주세요.", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"运费", py:"yùn fèi", tone:"4성+4성", mean:"배송비", ex_cn:"运费另外结算。", ex_py:"yùn fèi lìng wài jié suàn", ex_ko:"배송비는 따로 정산해요.", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"包含", py:"bāo hán", tone:"1성+2성", mean:"포함하다", ex_cn:"为什么包含在里面?", ex_py:"wèi shén me bāo hán zài lǐ miàn", ex_ko:"왜 포함되어 있어요?", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"单独", py:"dān dú", tone:"1성+2성", mean:"따로, 단독으로", ex_cn:"单独结算运费。", ex_py:"dān dú jié suàn yùn fèi", ex_ko:"배송비 따로 정산.", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"结算", py:"jié suàn", tone:"2성+4성", mean:"정산하다", ex_cn:"之后结算。", ex_py:"zhī hòu jié suàn", ex_ko:"나중에 정산.", note:"비즈니스 핵심", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"手续费", py:"shǒu xù fèi", tone:"3성+4성+4성", mean:"수수료", ex_cn:"3%的手续费。", ex_py:"bǎi fēn zhī sān de shǒu xù fèi", ex_ko:"3% 수수료.", note:"", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"美金", py:"měi jīn", tone:"3성+1성", mean:"미국 달러", ex_cn:"1000美金。", ex_py:"yī qiān měi jīn", ex_ko:"1,000달러.", note:"USD 구어 표현", color:"#FBEAF0"},
+  {cat:"결제/납기", cn:"韩元", py:"hán yuán", tone:"2성+2성", mean:"한국 원화", ex_cn:"68,000韩元。", ex_py:"liù wàn bā qiān hán yuán", ex_ko:"68,000원.", note:"KRW", color:"#FBEAF0"},
+  {cat:"거래 진행", cn:"下单", py:"xià dān", tone:"4성+1성", mean:"발주하다, 주문하다", ex_cn:"我们先下单5000套。", ex_py:"wǒ men xiān xià dān wǔ qiān tào", ex_ko:"우선 5000세트 발주할게요.", note:"발주 넣다", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"订单", py:"dìng dān", tone:"4성+1성", mean:"주문서, 발주", ex_cn:"追加订单。", ex_py:"zhuī jiā dìng dān", ex_ko:"추가 주문.", note:"", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"套", py:"tào", tone:"4성", mean:"세트 (양사)", ex_cn:"5000套。", ex_py:"wǔ qiān tào", ex_ko:"5000세트.", note:"세트 셀 때", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"联系", py:"lián xì", tone:"2성+4성", mean:"연락하다", ex_cn:"明天再联系您。", ex_py:"míng tiān zài lián xì nín", ex_ko:"내일 다시 연락드릴게요.", note:"", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"参考", py:"cān kǎo", tone:"1성+3성", mean:"참고하다", ex_cn:"以后追加生产时参考。", ex_py:"yǐ hòu zhuī jiā shēng chǎn shí cān kǎo", ex_ko:"나중에 추가 생산할 때 참고.", note:"", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"签合同", py:"qiān hé tóng", tone:"1성+2성+2성", mean:"계약을 체결하다", ex_cn:"什么时候签合同?", ex_py:"shén me shí hou qiān hé tóng", ex_ko:"언제 계약 체결하나요?", note:"", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"战争", py:"zhàn zhēng", tone:"4성+1성", mean:"전쟁", ex_cn:"战争的影响。", ex_py:"zhàn zhēng de yǐng xiǎng", ex_ko:"전쟁의 영향.", note:"시사 이슈", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"局势", py:"jú shì", tone:"2성+4성", mean:"정세, 상황", ex_cn:"战争局势稳定下来。", ex_py:"zhàn zhēng jú shì wěn dìng xià lái", ex_ko:"전쟁 상황이 안정되다.", note:"", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"稳定", py:"wěn dìng", tone:"3성+4성", mean:"안정되다", ex_cn:"局势稳定之后再联系。", ex_py:"jú shì wěn dìng zhī hòu zài lián xì", ex_ko:"상황 안정된 후 다시 연락.", note:"", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"临时", py:"lín shí", tone:"2성+2성", mean:"임시의, 일시적인", ex_cn:"这是临时涨价吗?", ex_py:"zhè shì lín shí zhǎng jià ma", ex_ko:"일시적 가격 인상인가요?", note:"vs 长期", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"慢慢", py:"màn màn", tone:"4성+4성", mean:"점점, 천천히", ex_cn:"数量会慢慢增加。", ex_py:"shù liàng huì màn màn zēng jiā", ex_ko:"수량이 점점 늘어날 거예요.", note:"속도 강조", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"越来越", py:"yuè lái yuè", tone:"4성+2성+4성", mean:"갈수록, 점점 더", ex_cn:"订单会越来越多。", ex_py:"dìng dān huì yuè lái yuè duō", ex_ko:"주문이 점점 많아질 거예요.", note:"변화 강조", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"购买", py:"gòu mǎi", tone:"4성+3성", mean:"구매하다 (격식)", ex_cn:"我没有购买的产品。", ex_py:"wǒ méi yǒu gòu mǎi de chǎn pǐn", ex_ko:"제가 구매하지 않은 제품.", note:"vs 买 (구어)", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"好评", py:"hǎo píng", tone:"3성+2성", mean:"좋은 평가/리뷰", ex_cn:"给好评。", ex_py:"gěi hǎo píng", ex_ko:"좋은 리뷰 남기다.", note:"중국 거래 핵심", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"差评", py:"chà píng", tone:"4성+2성", mean:"나쁜 리뷰", ex_cn:"会给差评的。", ex_py:"huì gěi chà píng de", ex_ko:"나쁜 리뷰 남길 거예요.", note:"강한 압박", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"确认收货", py:"què rèn shōu huò", tone:"4성+4성+1성+4성", mean:"수령 확인", ex_cn:"一个一个确认收货。", ex_py:"yí ge yí ge què rèn shōu huò", ex_ko:"하나하나 수령 확인.", note:"중국 거래 시스템", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"一个一个", py:"yí ge yí ge", tone:"2성+경성+2성+경성", mean:"하나하나", ex_cn:"一个一个确认。", ex_py:"yí ge yí ge què rèn", ex_ko:"하나하나 확인.", note:"반복 작업 강조", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"绑定", py:"bǎng dìng", tone:"3성+4성", mean:"묶다, 연결하다", ex_cn:"绑定一些产品在订单上。", ex_py:"bǎng dìng yì xiē chǎn pǐn zài dìng dān shàng", ex_ko:"제품을 주문서에 묶다.", note:"", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"流量", py:"liú liàng", tone:"2성+4성", mean:"트래픽, 노출량", ex_cn:"提高产品的流量。", ex_py:"tí gāo chǎn pǐn de liú liàng", ex_ko:"제품 노출을 높이다.", note:"E커머스 핵심", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"提高", py:"tí gāo", tone:"2성+1성", mean:"높이다, 향상시키다", ex_cn:"提高流量。", ex_py:"tí gāo liú liàng", ex_ko:"트래픽 향상.", note:"", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"回报", py:"huí bào", tone:"2성+4성", mean:"보답, 리턴", ex_cn:"一点点回报。", ex_py:"yì diǎn diǎn huí bào", ex_ko:"작은 보상.", note:"ROI 개념", color:"#DCE6F0"},
+  {cat:"거래 진행", cn:"平台", py:"píng tái", tone:"2성+2성", mean:"플랫폼", ex_cn:"阿里巴巴平台。", ex_py:"ā lǐ bā bā píng tái", ex_ko:"알리바바 플랫폼.", note:"", color:"#DCE6F0"},
+  {cat:"무역/통관", cn:"通关", py:"tōng guān", tone:"1성+1성", mean:"통관 (전체 과정)", ex_cn:"通关的时候会有问题。", ex_py:"tōng guān de shí hou huì yǒu wèn tí", ex_ko:"통관할 때 문제가 생겨요.", note:"포괄적", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"清关", py:"qīng guān", tone:"1성+1성", mean:"통관 처리 (수입국)", ex_cn:"清关时间多久?", ex_py:"qīng guān shí jiān duō jiǔ", ex_ko:"통관 시간은 얼마나 걸려요?", note:"수입국 측", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"报关", py:"bào guān", tone:"4성+1성", mean:"세관 신고", ex_cn:"报关需要什么资料?", ex_py:"bào guān xū yào shén me zī liào", ex_ko:"세관 신고에 어떤 자료가 필요해요?", note:"신고 행위", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"PI", py:"PI", tone:"-", mean:"프로포마 인보이스", ex_cn:"我们再做一份PI。", ex_py:"wǒ men zài zuò yí fèn PI", ex_ko:"PI 다시 만들어 드릴게요.", note:"무역 필수 서류", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"形式发票", py:"xíng shì fā piào", tone:"2성+4성+1성+4성", mean:"프로포마 인보이스", ex_cn:"形式发票是PI。", ex_py:"xíng shì fā piào shì PI", ex_ko:"PI는 형식 인보이스예요.", note:"PI의 정식", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"发票", py:"fā piào", tone:"1성+4성", mean:"인보이스, 영수증", ex_cn:"发票发给我。", ex_py:"fā piào fā gěi wǒ", ex_ko:"인보이스 보내주세요.", note:"", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"装箱单", py:"zhuāng xiāng dān", tone:"1성+1성+1성", mean:"패킹 리스트", ex_cn:"装箱单也要。", ex_py:"zhuāng xiāng dān yě yào", ex_ko:"패킹 리스트도 필요해요.", note:"", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"提单", py:"tí dān", tone:"2성+1성", mean:"선하증권 (B/L)", ex_cn:"什么时候出提单?", ex_py:"shén me shí hou chū tí dān", ex_ko:"선하증권 언제 나와요?", note:"무역 필수", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"海关", py:"hǎi guān", tone:"3성+1성", mean:"세관", ex_cn:"卡在海关了。", ex_py:"kǎ zài hǎi guān le", ex_ko:"세관에 묶였어요.", note:"", color:"#FAF1D0"},
+  {cat:"무역/통관", cn:"放行", py:"fàng xíng", tone:"4성+2성", mean:"통관 허가", ex_cn:"已经放行了。", ex_py:"yǐ jīng fàng xíng le", ex_ko:"이미 통관 허가됐어요.", note:"", color:"#FAF1D0"},
+];
+
+const FAV_KEY = 'dang_go_favorites_v2';
+const state = {
+  search: "", category: "전체",
+  favorites: new Set(), mode: "all",
+  cards: {
+    all: { index: 0, flipped: false, shuffled: [] },
+    fav: { index: 0, flipped: false, shuffled: [] },
+  },
+};
+
+try {
+  const saved = localStorage.getItem(FAV_KEY);
+  if (saved) state.favorites = new Set(JSON.parse(saved));
+} catch (e) {}
+
+function saveFavs() {
+  try { localStorage.setItem(FAV_KEY, JSON.stringify([...state.favorites])); } catch (e) {}
+}
+
+const categories = ["전체", ...new Set(VOCAB.map(v => v.cat))];
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getPool(mode) {
+  if (mode === 'fav') return VOCAB.filter(v => state.favorites.has(v.cn));
+  return VOCAB;
+}
+
+function ensureShuffled(mode) {
+  const pool = getPool(mode);
+  const cs = state.cards[mode];
+  if (cs.shuffled.length !== pool.length) {
+    cs.shuffled = shuffleArray(pool.map((_, i) => i));
+    cs.index = 0;
+    cs.flipped = false;
+  }
+}
+
+function reshuffleMode(mode) {
+  const pool = getPool(mode);
+  state.cards[mode].shuffled = shuffleArray(pool.map((_, i) => i));
+  state.cards[mode].index = 0;
+  state.cards[mode].flipped = false;
+}
+
+function getFiltered() {
+  const s = state.search.toLowerCase().trim();
+  return VOCAB.filter(v => {
+    if (state.category !== "전체" && v.cat !== state.category) return false;
+    if (!s) return true;
+    return v.cn.includes(s) || v.py.toLowerCase().includes(s) ||
+           v.mean.toLowerCase().includes(s) || v.ex_cn.includes(s) ||
+           v.ex_ko.toLowerCase().includes(s);
+  });
+}
+
+function renderFilters() {
+  const el = document.getElementById('filter-chips');
+  el.innerHTML = categories.map(c =>
+    `<button class="filter-chip ${state.category === c ? 'active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
+  ).join('');
+  el.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.category = btn.dataset.cat;
+      renderFilters();
+      renderList();
+    });
+  });
+}
+
+function renderListCard(v) {
+  const isFav = state.favorites.has(v.cn);
+  return `
+    <div class="vocab-card">
+      <div class="vocab-card-top">
+        <span class="vocab-category">${escapeHtml(v.cat)}</span>
+        <button class="fav-btn ${isFav ? 'active' : ''}" data-cn="${escapeHtml(v.cn)}" aria-label="즐겨찾기">${isFav ? '♥' : '♡'}</button>
+      </div>
+      <h3 class="vocab-meaning">${escapeHtml(v.mean)}</h3>
+      <div class="vocab-chinese-row">
+        <span class="vocab-chinese">${escapeHtml(v.cn)}</span>
+        <span class="vocab-pinyin">${escapeHtml(v.py)}</span>
+      </div>
+      <div class="vocab-tone">${escapeHtml(v.tone)}</div>
+      <div class="vocab-example">
+        <div class="vocab-example-ko">${escapeHtml(v.ex_ko)}</div>
+        <div class="vocab-example-cn">${escapeHtml(v.ex_cn)}</div>
+      </div>
+      ${v.note ? `<p class="vocab-note">💡 ${escapeHtml(v.note)}</p>` : ''}
+    </div>
+  `;
+}
+
+function renderList() {
+  const list = getFiltered();
+  const el = document.getElementById('vocab-list');
+  document.getElementById('stats-row').textContent = `총 ${list.length}개`;
+  if (list.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-emoji">🔍</div>검색 결과가 없어요</div>';
+    return;
+  }
+  el.innerHTML = list.map(renderListCard).join('');
+  el.querySelectorAll('.fav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const cn = btn.dataset.cn;
+      if (state.favorites.has(cn)) state.favorites.delete(cn);
+      else state.favorites.add(cn);
+      saveFavs();
+      renderList();
+      state.cards.fav.shuffled = [];
+      renderFlashcard('all');
+      renderFlashcard('fav');
+    });
+  });
+}
+
+function renderFlashcard(mode) {
+  const pool = getPool(mode);
+  const cs = state.cards[mode];
+
+  if (mode === 'fav' && pool.length === 0) {
+    document.getElementById('quiz-progress-fav').textContent = '0 / 0';
+    const card = document.getElementById('flashcard-fav');
+    card.style.background = 'var(--surface-2)';
+    document.getElementById('card-category-fav').textContent = '';
+    document.getElementById('card-ex-ko-fav').innerHTML = '<div style="font-size:14px; color: var(--text-3); padding: 40px 0; line-height:1.7;">즐겨찾기한 단어가 없어요<br><span style="font-size:12px;">하트 버튼을 눌러서 추가해보세요</span></div>';
+    document.getElementById('card-ex-cn-fav').textContent = '';
+    document.getElementById('card-ex-pinyin-fav').textContent = '';
+    document.getElementById('card-meaning-front-fav').textContent = '';
+    document.getElementById('card-meaning-front-fav').style.display = 'none';
+    document.getElementById('card-hint-fav').textContent = '';
+    card.classList.remove('flipped');
+    document.getElementById('card-fav-fav').classList.remove('active');
+    document.getElementById('card-fav-fav').textContent = '♡';
+    return;
+  }
+
+  ensureShuffled(mode);
+  if (cs.index >= pool.length) cs.index = 0;
+  const idx = cs.shuffled[cs.index];
+  const v = pool[idx];
+  if (!v) return;
+
+  document.getElementById(`quiz-progress-${mode}`).textContent = `${cs.index + 1} / ${pool.length}`;
+  const card = document.getElementById(`flashcard-${mode}`);
+  card.style.background = v.color;
+
+  document.getElementById(`card-category-${mode}`).textContent = v.cat;
+  document.getElementById(`card-ex-ko-${mode}`).textContent = v.ex_ko;
+  document.getElementById(`card-ex-cn-${mode}`).textContent = v.ex_cn;
+  document.getElementById(`card-ex-pinyin-${mode}`).textContent = v.ex_py;
+  document.getElementById(`card-meaning-front-${mode}`).textContent = v.mean;
+  document.getElementById(`card-meaning-front-${mode}`).style.display = '';
+  document.getElementById(`card-chinese-${mode}`).textContent = v.cn;
+  document.getElementById(`card-meaning-back-${mode}`).textContent = v.mean;
+  document.getElementById(`card-pinyin-${mode}`).textContent = v.py;
+  const noteEl = document.getElementById(`card-note-${mode}`);
+  noteEl.textContent = v.note ? '💡 ' + v.note : '';
+  noteEl.style.display = v.note ? 'block' : 'none';
+
+  const hintEl = document.getElementById(`card-hint-${mode}`);
+  hintEl.textContent = cs.flipped ? '탭해서 다음 단어로 →' : '탭해서 정답 보기';
+
+  const favBtn = document.getElementById(`card-fav-${mode}`);
+  if (state.favorites.has(v.cn)) {
+    favBtn.textContent = '♥';
+    favBtn.classList.add('active');
+  } else {
+    favBtn.textContent = '♡';
+    favBtn.classList.remove('active');
+  }
+
+  if (cs.flipped) card.classList.add('flipped');
+  else card.classList.remove('flipped');
+}
+
+function handleCardClick(e, mode) {
+  if (e && e.target.closest('.fav-center-btn')) return;
+  const cs = state.cards[mode];
+  if (!cs.flipped) {
+    cs.flipped = true;
+    renderFlashcard(mode);
+  } else {
+    nextCard(mode);
+  }
+}
+
+function nextCard(mode) {
+  const pool = getPool(mode);
+  if (pool.length === 0) return;
+  const cs = state.cards[mode];
+  cs.index = (cs.index + 1) % pool.length;
+  cs.flipped = false;
+  renderFlashcard(mode);
+}
+
+function prevCard(mode) {
+  const pool = getPool(mode);
+  if (pool.length === 0) return;
+  const cs = state.cards[mode];
+  cs.index = (cs.index - 1 + pool.length) % pool.length;
+  cs.flipped = false;
+  renderFlashcard(mode);
+}
+
+function toggleCardFav(e, mode) {
+  e.stopPropagation();
+  const pool = getPool(mode);
+  if (pool.length === 0) return;
+  const cs = state.cards[mode];
+  const idx = cs.shuffled[cs.index];
+  const v = pool[idx];
+  if (!v) return;
+
+  if (state.favorites.has(v.cn)) state.favorites.delete(v.cn);
+  else state.favorites.add(v.cn);
+  saveFavs();
+  state.cards.fav.shuffled = [];
+  renderFlashcard('all');
+  renderFlashcard('fav');
+  renderList();
+}
+
+window.handleCardClick = handleCardClick;
+window.nextCard = nextCard;
+window.prevCard = prevCard;
+window.toggleCardFav = toggleCardFav;
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const mode = btn.dataset.mode;
+    state.mode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.getElementById('tab-all').classList.toggle('active', mode === 'all');
+    document.getElementById('tab-fav').classList.toggle('active', mode === 'fav');
+    document.getElementById('tab-list').classList.toggle('active', mode === 'list');
+
+    if (mode === 'all' || mode === 'fav') {
+      reshuffleMode(mode);
+      renderFlashcard(mode);
+    }
+    if (mode === 'list') renderList();
+    window.scrollTo(0, 0);
+  });
+});
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  state.search = e.target.value;
+  renderList();
+});
+
+reshuffleMode('all');
+renderFlashcard('all');
+renderFlashcard('fav');
+renderFilters();
+renderList();
+</script>
+</body>
+</html>
